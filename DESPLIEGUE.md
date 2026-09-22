@@ -3,7 +3,7 @@
 Este documento describe como llevar Marlep Cosmetics a produccion usando:
 
 - **Neon** — PostgreSQL serverless, para reemplazar la base de datos local.
-- **Vercel** — hosting del `frontend/` (SPA de Vite) y, opcionalmente, del `backend/` (API Express) como funcion serverless.
+- **Vercel** — un unico proyecto (**Services**) que despliega `frontend/` (SPA de Vite) y `backend/` (API Express) juntos, bajo un mismo dominio.
 
 ## Viabilidad
 
@@ -180,15 +180,53 @@ En Vercel estas mismas claves se cargan como **Environment Variables** del proye
 
 ---
 
-## 2. Backend en Vercel
+## 2. Desplegar en Vercel (un solo proyecto, Services)
 
-### 2.1 Adaptar Express a funcion serverless
+### 2.1 Por que un solo proyecto en vez de dos
 
-Vercel no ejecuta procesos long-lived: no corre `app.listen()`. Hay que exportar la app y solo escuchar en local.
+La primera version de este documento proponia **dos** proyectos Vercel separados (uno para `backend/`, otro para `frontend/`), cada uno con su propio dominio, conectados con un rewrite manual y exponiendo el backend como funcion serverless suelta. Al crear el proyecto en Vercel, la plataforma detecto automaticamente el monorepo y ofrecio el preset **Services**, que es mas simple y es lo que usa este documento ahora:
 
-**`backend/src/index.js`** — cambiar el final del archivo:
+- **Un solo proyecto** (`marlep`), **un solo dominio** (`https://marlep.vercel.app`).
+- Frontend y backend se declaran como "services" dentro de un `vercel.json` en la **raiz del repo**; Vercel construye cada uno con su `root` correspondiente.
+- El ruteo se resuelve con `rewrites` a nivel de proyecto: todo lo que matchee `/api(/.*)?` va al service `backend`, el resto va al service `frontend`. El navegador ve todo como same-origin — **no hace falta CORS ni un `frontend/vercel.json` con rewrite manual**.
+- El backend se despliega con deteccion **zero-config de Express**: Vercel busca `index.js`/`server.js`/`app.js` (o el mismo dentro de `src/`) en la raiz del service y lo toma automaticamente — no hace falta un `backend/api/index.js` ni un `backend/vercel.json` propios (si los creaste siguiendo una version anterior de esta guia, se pueden borrar).
+
+### 2.2 `vercel.json` en la raiz del repo
+
+Vercel genera este archivo automaticamente al crear el proyecto (aparece en la pantalla "New Project" con boton para copiarlo); hay que agregarlo al repo **antes** de poder desplegar (Vercel no lo inyecta solo, lo lee del repo):
+
+```json
+{
+  "services": {
+    "frontend": {
+      "root": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "root": "backend"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api(/.*)?",
+      "destination": { "type": "service", "service": "backend" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "type": "service", "service": "frontend" }
+    }
+  ]
+}
+```
+
+`backend` no lleva `framework` porque Vercel lo autodetecta como Express (zero-config). El rewrite preserva la ruta completa (no recorta el prefijo `/api`), lo cual calza con que las rutas del propio Express ya estan definidas con ese prefijo (`app.get('/api/health', ...)`, `app.use('/api/products', ...)`, etc. en [`backend/src/index.js`](backend/src/index.js)) — no requiere ningun cambio adicional en las rutas.
+
+### 2.3 Requisitos que `backend/src/index.js` ya cumple
+
+Para que la deteccion zero-config de Express funcione, el archivo debe exportar la app y no bloquear el arranque con `app.listen()` en el entorno de Vercel — esto ya esta hecho:
 
 ```js
+// backend/src/index.js (fragmento final)
 const PORT = process.env.PORT || 4000;
 
 if (process.env.VERCEL !== '1') {
@@ -200,91 +238,47 @@ if (process.env.VERCEL !== '1') {
 export default app;
 ```
 
-**Crear `backend/api/index.js`** (Vercel trata todo lo que esta bajo `/api` como una funcion):
-
-```js
-export { default } from '../src/index.js';
-```
-
-**Crear `backend/vercel.json`** para que todas las rutas (`/api/products`, `/api/orders`, etc.) caigan en esa unica funcion:
-
-```json
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
-}
-```
+Localmente (`npm run dev`/`npm start`) sigue funcionando igual: `VERCEL` no existe en el entorno local, asi que sigue llamando `app.listen()` como siempre.
 
 > Nota: `orders.js` ya usa `pool.connect()` + una sola transaccion `BEGIN/COMMIT` por request (no mezcla queries sueltas fuera de esa conexion), lo cual es compatible con el modo *transaction pooling* de PgBouncer/Neon. No requiere cambios adicionales.
 
-### 2.2 Crear el proyecto en Vercel
+### 2.4 Crear el proyecto en Vercel
 
-1. Subir el repo a GitHub: **`marlep`**, puede ser **privado** — Vercel (incluso en el plan Hobby/gratuito) soporta repos privados sin costo adicional, solo hay que autorizar la GitHub App de Vercel para ese repo (o para toda la cuenta) al conectar la integracion. Conviene dejarlo privado ya que el repo no necesita ser publico para nada del flujo de despliegue. (El directorio de trabajo actual no es un repo Git todavia — inicializarlo con `git init` si hace falta). Es un **monorepo**: contiene `backend/`, `frontend/` e `imagen/`. El proyecto Vercel del backend (creado en el paso 2) se nombra `marlep-backend` — es solo el nombre del *proyecto en Vercel* (de ahi sale la URL `https://marlep-backend.vercel.app` del paso 6), no del repo de GitHub. El proyecto Vercel del frontend (seccion 3.3) importa este mismo repo `marlep`, con **Root Directory**: `frontend/`, y se nombra `marlep` en Vercel.
-2. En Vercel: **New Project** → importar el repo `marlep` → nombrar el proyecto `marlep-backend`.
-3. **Root Directory**: `backend/`.
-4. Framework preset: "Other" (Vercel detecta `api/index.js` automaticamente).
-5. Variables de entorno del proyecto (Settings → Environment Variables):
-   - `DATABASE_URL` = connection string **pooled** de Neon (con `?sslmode=require`).
+1. Subir el repo a GitHub: **`marlep`**, puede ser **privado** — Vercel (incluso en el plan Hobby/gratuito) soporta repos privados sin costo adicional, solo hay que autorizar la GitHub App de Vercel para ese repo (o para toda la cuenta) al conectar la integracion.
+2. En Vercel: **New Project** → importar el repo `marlep`.
+3. **Project Name**: `marlep` (un solo proyecto, no hace falta distinguir "backend"/"frontend" en el nombre).
+4. **Application Preset**: `Services` — Vercel deberia detectar automaticamente los dos services (`frontend` con framework Vite, `backend` como Web Service Express) y mostrar el `vercel.json` sugerido (ver 2.2). Si la pantalla dice "`vercel.json` required to deploy projects with multiple services", significa que el archivo todavia no esta commiteado en el repo — agregarlo (paso 1) y darle **Refresh** en esa pantalla.
+5. Variables de entorno del proyecto (Settings → Environment Variables — se aplican a todo el proyecto, el service `frontend` simplemente no las usa):
+   - `DATABASE_URL` = connection string **pooled** de Neon (con `?sslmode=require`, ver 1.3.2 para `verify-full`).
    - `YAPE_TITULAR`
    - `YAPE_NUMERO`
-6. Deploy. Anotar la URL resultante, ej. `https://marlep-backend.vercel.app`.
+6. Deploy. Anotar la URL resultante, ej. `https://marlep.vercel.app`.
 7. Verificar:
    ```bash
-   curl https://marlep-backend.vercel.app/api/health
-   curl https://marlep-backend.vercel.app/api/config/yape
-   curl https://marlep-backend.vercel.app/api/products
+   curl https://marlep.vercel.app/api/health
+   curl https://marlep.vercel.app/api/config/yape
+   curl https://marlep.vercel.app/api/products
    ```
+   Y abrir `https://marlep.vercel.app/` en el navegador para confirmar que el frontend carga el catalogo.
 
----
-
-## 3. Frontend en Vercel
-
-### 3.1 Resolver las llamadas a `/api`
-
-[`frontend/src/api.js`](frontend/src/api.js) llama a rutas **relativas** (`/api/products`, `/api/orders`, `/api/config/yape`). En dev funciona por el proxy de `vite.config.js`; en produccion, frontend y backend viven en dominios `*.vercel.app` distintos.
-
-Solucion recomendada (sin tocar `api.js`): agregar un rewrite en el proyecto del frontend que reenvie `/api/*` al dominio del backend.
-
-**Crear `frontend/vercel.json`**:
-
-```json
-{
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "https://marlep-backend.vercel.app/api/:path*" }
-  ]
-}
-```
-
-Con esto el navegador ve todo como same-origin (no hace falta configurar CORS en el backend).
-
-### 3.2 Verificar el asset del QR de Yape
+### 2.5 Verificar el asset del QR de Yape
 
 Confirmar que `frontend/public/images/yape-qr.png` (exportado desde la app Yape del negocio) este presente antes del build. Sin el, el checkout sigue siendo usable pero muestra el QR de referencia generado por `qrcode.react`.
 
-### 3.3 Crear el proyecto en Vercel
-
-1. En Vercel: **New Project** → importar el mismo repo `marlep` (ver nota de 2.2) → nombrar el proyecto `marlep`.
-2. **Root Directory**: `frontend/`.
-3. Framework preset: **Vite** (autodetectado).
-4. Build command: `npm run build` (default). Output directory: `dist` (default).
-5. Sin variables de entorno adicionales (se usa el rewrite de `vercel.json`, no un `VITE_API_URL`).
-6. Deploy. Anotar la URL resultante, ej. `https://marlep.vercel.app`.
-
 ---
 
-## 4. Checklist final
+## 3. Checklist final
 
 - [ ] Proyecto Neon creado, `schema.sql` y `seed.sql` cargados.
 - [ ] `backend/src/db.js` actualizado para soportar `DATABASE_URL` + SSL.
 - [x] `backend/src/index.js` exporta `app` y solo hace `listen` fuera de Vercel.
-- [x] `backend/api/index.js` y `backend/vercel.json` creados.
-- [ ] Proyecto Vercel del backend desplegado, con `DATABASE_URL` (endpoint **pooled**), `YAPE_TITULAR`, `YAPE_NUMERO`.
-- [ ] `frontend/vercel.json` con el rewrite `/api/:path*` apuntando a la URL real del backend.
+- [x] `vercel.json` en la raiz del repo con `services` + `rewrites` (ver 2.2).
+- [ ] Proyecto Vercel `marlep` desplegado (preset Services), con `DATABASE_URL` (endpoint **pooled**), `YAPE_TITULAR`, `YAPE_NUMERO`.
 - [ ] `frontend/public/images/yape-qr.png` presente (QR real, no el de referencia).
-- [ ] Proyecto Vercel del frontend desplegado.
 - [ ] Prueba end-to-end en produccion: catalogo → carrito → checkout → `POST /api/orders` → `GET /pedido/:code`.
 
 ## Riesgos y limitaciones a tener en cuenta
 
-- **Cold starts**: la primera request tras inactividad en la funcion del backend puede tardar mas (arranque de funcion + conexion a Neon). No es critico para un checkout, pero es esperable.
+- **Cold starts**: la primera request tras inactividad en el service del backend puede tardar mas (arranque + conexion a Neon). No es critico para un checkout, pero es esperable.
 - **Conexiones a Postgres**: usar siempre el endpoint **pooled** de Neon desde Vercel; el endpoint directo tiene un limite de conexiones bajo y se agota rapido con trafico serverless.
 - **Verificacion de pago manual**: no cambia con el despliegue — los pedidos siguen quedando en `pendiente_pago` hasta revision manual, no hay panel de administracion en este alcance.
