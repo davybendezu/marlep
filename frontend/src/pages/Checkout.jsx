@@ -28,6 +28,10 @@ export default function Checkout() {
     fetchYapeConfig().then(setYapeConfig);
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, []);
+
   const shippingCost = form.deliveryMethod === 'pickup' ? 0 : SHIPPING_COST;
   const total = subtotal + shippingCost;
 
