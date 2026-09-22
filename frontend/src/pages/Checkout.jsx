@@ -268,7 +268,7 @@ export default function Checkout() {
                   Copia los datos resaltados de tu comprobante Yape (como en el ejemplo):
                 </p>
                 <img
-                  src="/images/yapeComprobante.png"
+                  src="/images/yapeComprobanteDatosTransaccion.png"
                   alt="Ejemplo de donde copiar el numero de operacion en el comprobante de Yape"
                   className="mt-2 w-full max-w-xs rounded-lg border border-honey-500/20"
                 />
