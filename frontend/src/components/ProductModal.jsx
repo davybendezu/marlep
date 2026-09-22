@@ -39,7 +39,7 @@ export default function ProductModal({ product, onClose }) {
           <div>
             <p className="text-sm text-leaf-700/80">{product.description}</p>
 
-            <div className="mt-5">
+            {/* <div className="mt-5">
               <p className="text-sm font-semibold text-leaf-700">Elige tu tama&ntilde;o</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {product.variants.map((variant) => (
@@ -55,7 +55,7 @@ export default function ProductModal({ product, onClose }) {
                   </button>
                 ))}
               </div>
-            </div>
+            </div> */}
 
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-honey-600">S/ {Number(selectedVariant.price).toFixed(2)}</span>
@@ -93,11 +93,11 @@ export default function ProductModal({ product, onClose }) {
               </div>
             )}
 
-            <details className="mt-6 rounded-xl bg-cream-100 p-3 text-sm text-leaf-700/80">
+            {/* <details className="mt-6 rounded-xl bg-cream-100 p-3 text-sm text-leaf-700/80">
               <summary className="cursor-pointer font-semibold text-leaf-700">Ingredientes y beneficios</summary>
               <p className="mt-2"><strong>Ingredientes:</strong> {product.ingredients}</p>
               <p className="mt-2"><strong>Beneficios:</strong> {product.benefits}</p>
-            </details>
+            </details> */}
           </div>
         </div>
       </div>
