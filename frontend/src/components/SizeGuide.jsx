@@ -1,5 +1,5 @@
 const SIZES = [
-  { label: 'Mini Bolsillo', grams: '7g', use: 'Cuidado artesanal en versi&oacute;n ultra compacta.' },
+  { label: 'Mini Bolsillo', grams: '7g', use: 'Cuidado artesanal en versión ultra compacta.' },
   { label: 'Tamaño de Viaje', grams: '15g', use: 'Perfecta para llevar en tu cartera o maleta.' },
   { label: 'Tamaño Estándar', grams: '30g', use: 'El favorito para uso diario en casa.' },
   { label: 'Tamaño Familiar', grams: '45g', use: 'Rinde mas, ideal para toda la familia.' },
