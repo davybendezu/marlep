@@ -1,8 +1,8 @@
 const SIZES = [
-  { label: 'Mini / Facial', grams: '30 g', use: 'Ideal para uso facial o probar la fragancia.' },
-  { label: 'Tamaño de Viaje', grams: '60 g', use: 'Perfecta para llevar en tu cartera o maleta.' },
-  { label: 'Tamaño Estándar', grams: '100 g', use: 'El favorito para uso diario en casa.' },
-  { label: 'Tamaño Familiar', grams: '250 g', use: 'Rinde mas, ideal para toda la familia.' },
+  { label: 'Mini Bolsillo', grams: '7g', use: 'Ideal para uso facial o probar la fragancia.' },
+  { label: 'Tamaño de Viaje', grams: '15g', use: 'Perfecta para llevar en tu cartera o maleta.' },
+  { label: 'Tamaño Estándar', grams: '30g', use: 'El favorito para uso diario en casa.' },
+  { label: 'Tamaño Familiar', grams: '45g', use: 'Rinde mas, ideal para toda la familia.' },
 ];
 
 export default function SizeGuide() {
