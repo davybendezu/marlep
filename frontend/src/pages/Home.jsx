@@ -32,15 +32,15 @@ export default function Home() {
       <section id="productos" className="container-page py-16">
         <div className="text-center">
           <span className="chip chip-active inline-block">Coleccion Marlep</span>
-          <h2 className="mt-4 text-3xl font-bold text-leaf-700">Elige tu fragancia favorita</h2>
-          <p className="mx-auto mt-2 max-w-xl text-leaf-700/70">
+          <h2 className="mt-4 text-3xl font-bold text-leaf-700">Elige tu prodcuto</h2>
+          {/* <p className="mx-auto mt-2 max-w-xl text-leaf-700/70">
             Tres formulas artesanales, cuatro tamanos. Encuentra la crema perfecta para ti.
-          </p>
+          </p> */}
         </div>
 
-        <div className="mt-8">
+        {/* <div className="mt-8">
           <FilterBar products={products} active={activeFilter} onChange={setActiveFilter} />
-        </div>
+        </div> */}
 
         {loading ? (
           <p className="mt-10 text-center text-leaf-700/60">Cargando productos...</p>

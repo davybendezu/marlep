@@ -23,18 +23,18 @@ export default function ProductCard({ product, onSelect }) {
         />
       </div>
       <div className="flex flex-1 flex-col p-5">
-        <span
+        {/* <span
           className="mb-2 inline-block w-fit rounded-full px-3 py-1 text-xs font-semibold text-leaf-700"
           style={{ backgroundColor: `${product.accent_color}40` }}
         >
           {product.variants.length} presentaciones
-        </span>
+        </span> */}
         <h3 className="font-display text-lg font-semibold text-leaf-700">{product.name}</h3>
         <p className="mt-1 flex-1 text-sm text-leaf-700/70">{product.short_desc}</p>
         <div className="mt-4 flex items-center justify-between">
           <span className="font-semibold text-honey-600">{priceRange(product.variants)}</span>
           <button onClick={() => onSelect(product)} className="btn-primary !px-4 !py-2 text-xs">
-            Ver opciones
+            Comprar
           </button>
         </div>
       </div>
