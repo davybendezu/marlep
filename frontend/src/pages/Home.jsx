@@ -20,6 +20,15 @@ export default function Home() {
       .finally(() => setLoading(false));
   }, []);
 
+  useEffect(() => {
+    // Al recargar con un hash en la URL (ej. /#productos), el navegador intenta
+    // hacer scroll al elemento antes de que React lo haya montado, asi que se
+    // queda en el inicio. Lo repetimos manualmente una vez montado.
+    if (window.location.hash) {
+      document.querySelector(window.location.hash)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
+  }, []);
+
   const filteredProducts = useMemo(
     () => (activeFilter === 'todas' ? products : products.filter((p) => p.slug === activeFilter)),
     [products, activeFilter]
