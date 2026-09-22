@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 
-const VISIBLE_MS = 1900;
+const MIN_VISIBLE_MS = 1900;
+const MAX_WAIT_MS = 6000;
 const FADE_MS = 600;
 
 export default function SplashScreen({ onDone }) {
+  const [started, setStarted] = useState(false);
   const [fading, setFading] = useState(false);
   const audioRef = useRef(null);
   const [entry] = useState(() => {
@@ -19,30 +21,62 @@ export default function SplashScreen({ onDone }) {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
-
-    const playAudio = () => audioRef.current?.play().catch(() => {});
-    const interactionEvents = ['pointerdown', 'keydown', 'touchstart'];
-
-    // Los navegadores bloquean el autoplay con sonido sin interaccion previa del usuario.
-    // Si el intento inicial falla, queda un listener de un solo uso que reproduce el
-    // audio apenas ocurra la primera interaccion en la pagina.
-    audioRef.current?.play().catch(() => {
-      interactionEvents.forEach((event) => document.addEventListener(event, playAudio, { once: true }));
-    });
-
-    const fadeTimer = setTimeout(() => setFading(true), VISIBLE_MS);
-    const doneTimer = setTimeout(() => {
+    return () => {
       document.body.style.overflow = '';
-      onDone();
-    }, VISIBLE_MS + FADE_MS);
+    };
+  }, []);
+
+  // El conteo hacia el cierre automatico solo arranca despues del boton "Iniciar":
+  // asi el play() del audio ocurre en respuesta directa a un gesto del usuario y
+  // los navegadores no lo bloquean. El cierre espera a que el audio termine de
+  // sonar (evento "ended"), no a una duracion adivinada de antemano, con un
+  // minimo visible y un tope de seguridad por si el audio falla.
+  useEffect(() => {
+    if (!started) return undefined;
+
+    const audio = audioRef.current;
+    let minElapsed = false;
+    let audioDone = !audio;
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      setFading(true);
+      setTimeout(onDone, FADE_MS);
+    };
+
+    const tryFinish = () => {
+      if (minElapsed && audioDone) finish();
+    };
+
+    const minTimer = setTimeout(() => {
+      minElapsed = true;
+      tryFinish();
+    }, MIN_VISIBLE_MS);
+
+    const safetyTimer = setTimeout(finish, MAX_WAIT_MS);
+
+    const handleAudioDone = () => {
+      audioDone = true;
+      tryFinish();
+    };
+
+    audio?.addEventListener('ended', handleAudioDone);
+    audio?.addEventListener('error', handleAudioDone);
 
     return () => {
-      clearTimeout(fadeTimer);
-      clearTimeout(doneTimer);
-      document.body.style.overflow = '';
-      interactionEvents.forEach((event) => document.removeEventListener(event, playAudio));
+      clearTimeout(minTimer);
+      clearTimeout(safetyTimer);
+      audio?.removeEventListener('ended', handleAudioDone);
+      audio?.removeEventListener('error', handleAudioDone);
     };
-  }, [onDone]);
+  }, [started, onDone]);
+
+  const handleStart = () => {
+    audioRef.current?.play().catch(() => {});
+    setStarted(true);
+  };
 
   return (
     <div
@@ -51,30 +85,49 @@ export default function SplashScreen({ onDone }) {
         fading ? 'pointer-events-none opacity-0' : 'opacity-100'
       }`}
     >
-      <div className="relative flex h-40 w-40 items-center justify-center">
-        <span className="splash-glow" />
-        <span className="splash-ring" />
-        <span className="splash-ring [animation-delay:0.9s]" />
-        <img
-          src="/images/logo.png"
-          alt="Marlep Cosmetics"
-          className="splash-logo relative h-32 w-32 rounded-full object-cover shadow-soft"
-          style={{
-            '--start-x': `${entry.x}px`,
-            '--start-y': `${entry.y}px`,
-            '--start-rotate': `${entry.rotate}deg`,
-          }}
-        />
-      </div>
+      {started ? (
+        <>
+          <div className="splash-stage relative flex h-40 w-40 items-center justify-center">
+            <span className="splash-glow" />
+            <span className="splash-ring" />
+            <span className="splash-ring [animation-delay:0.9s]" />
+            <img
+              src="/images/logo.png"
+              alt="Marlep Cosmetics"
+              className="splash-logo relative h-32 w-32 rounded-full object-cover shadow-soft"
+              style={{
+                '--start-x': `${entry.x}px`,
+                '--start-y': `${entry.y}px`,
+                '--start-rotate': `${entry.rotate}deg`,
+              }}
+            />
+          </div>
 
-      <div className="mt-6 overflow-hidden">
-        <p className="splash-text font-display text-xl font-semibold text-leaf-700">Marlep Cosmetics</p>
-      </div>
-      <div className="overflow-hidden">
-        <p className="splash-text splash-text-delay text-xs uppercase tracking-[0.3em] text-honey-600">
-          Suavidad Natural
-        </p>
-      </div>
+          <div className="mt-6 overflow-hidden">
+            <p className="splash-text font-display text-xl font-semibold text-leaf-700">Marlep Cosmetics</p>
+          </div>
+          <div className="overflow-hidden">
+            <p className="splash-text splash-text-delay text-xs uppercase tracking-[0.3em] text-honey-600">
+              Suavidad Natural
+            </p>
+          </div>
+        </>
+      ) : (
+        <>
+          <img
+            src="/images/logo.png"
+            alt="Marlep Cosmetics"
+            className="h-32 w-32 rounded-full object-cover shadow-soft"
+          />
+          <p className="mt-6 font-display text-xl font-semibold text-leaf-700">Marlep Cosmetics</p>
+          <button type="button" onClick={handleStart} className="btn-primary mt-8">
+            <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            Iniciar
+          </button>
+        </>
+      )}
 
       <span className="sr-only">Cargando Marlep Cosmetics…</span>
       <audio ref={audioRef} src="/audio/marlep-splash.mp3" preload="auto" />

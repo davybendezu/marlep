@@ -42,28 +42,29 @@ h1, h2, h3, h4 {
 @keyframes splash-logo-in {
   0% {
     opacity: 0;
-    transform: translate(var(--start-x, 0px), var(--start-y, 0px)) scale(0.6) rotate(var(--start-rotate, -220deg));
+    transform: translate(var(--start-x, 0px), var(--start-y, 0px)) scale(0.6) rotate(var(--start-rotate, -220deg))
+      rotateY(-140deg) rotateX(10deg);
   }
   55% {
     opacity: 1;
-    transform: translate(0, 0) scale(1.06) rotate(10deg);
+    transform: translate(0, 0) scale(1.06) rotate(10deg) rotateY(20deg) rotateX(-6deg);
   }
   75% {
-    transform: translate(0, 0) scale(0.98) rotate(-4deg);
+    transform: translate(0, 0) scale(0.98) rotate(-4deg) rotateY(-8deg) rotateX(3deg);
   }
   100% {
     opacity: 1;
-    transform: translate(0, 0) scale(1) rotate(0deg);
+    transform: translate(0, 0) scale(1) rotate(0deg) rotateY(0deg) rotateX(0deg);
   }
 }
 
 @keyframes splash-float {
   0%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) rotateX(8deg) rotateY(-14deg);
   }
   50% {
-    transform: translateY(-6px) scale(1.035);
+    transform: translateY(-6px) scale(1.035) rotateX(-8deg) rotateY(14deg);
   }
 }
 
@@ -101,7 +102,13 @@ h1, h2, h3, h4 {
   }
 }
 
+.splash-stage {
+  perspective: 900px;
+}
+
 .splash-logo {
+  transform-style: preserve-3d;
+  will-change: transform;
   animation:
     splash-logo-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both,
     splash-float 3.2s ease-in-out 0.9s infinite;
