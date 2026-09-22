@@ -34,7 +34,7 @@ export default function ProductModal({ product, onClose }) {
         </div>
 
         <div className="grid gap-6 p-5 sm:grid-cols-2">
-          <img src={product.image_url} alt={product.name} className="mx-auto w-full max-w-xs rounded-2xl bg-cream-100 object-cover" />
+          <img src={product.image_url} alt={product.name} className="mx-auto w-full max-w-[220px] rounded-2xl bg-cream-100 object-cover" />
 
           <div>
             <p className="text-sm text-leaf-700/80">{product.description}</p>

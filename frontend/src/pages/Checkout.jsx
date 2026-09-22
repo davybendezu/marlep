@@ -42,12 +42,12 @@ export default function Checkout() {
   }
 
   function handleYapeCodeChange(e) {
-    let raw = e.target.value.replace(/[^\d/]/g, '');
-    const slashIndex = raw.indexOf('/');
-    if (slashIndex !== -1) {
-      const before = raw.slice(0, slashIndex).slice(0, 4);
-      const after = raw.slice(slashIndex + 1).replace(/\//g, '');
-      raw = `${before}/${after}`;
+    let raw = e.target.value.replace(/[^\d-]/g, '');
+    const dashIndex = raw.indexOf('-');
+    if (dashIndex !== -1) {
+      const before = raw.slice(0, dashIndex).slice(0, 4);
+      const after = raw.slice(dashIndex + 1).replace(/-/g, '');
+      raw = `${before}-${after}`;
     } else {
       raw = raw.slice(0, 4);
     }
@@ -61,8 +61,8 @@ export default function Checkout() {
     if (!form.yapeOperationCode.trim()) {
       return 'Ingresa el codigo/numero de operacion de tu pago Yape para poder verificarlo.';
     }
-    if (!/^\d{3,4}\/\d{6,}$/.test(form.yapeOperationCode.trim())) {
-      return 'El codigo de operacion debe tener el formato 000/000000 (3 o 4 digitos, una barra y 6 o mas digitos).';
+    if (!/^\d{3,4}-\d{6,}$/.test(form.yapeOperationCode.trim())) {
+      return 'El codigo de operacion debe tener el formato 000-000000 (3 o 4 digitos, un guion y 6 o mas digitos).';
     }
     return '';
   }
@@ -249,17 +249,17 @@ export default function Checkout() {
               value={form.yapeOperationCode}
               onChange={handleYapeCodeChange}
               onFocus={() => setShowComprobanteHelp(true)}
-              placeholder="000/000000"
+              placeholder="000-000000"
               className="mt-3 w-full rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
             />
             {form.yapeOperationCode.trim() === '' ? (
               <p className="mt-1 text-xs text-blush-500">Este campo es obligatorio.</p>
-            ) : !/^\d{3,4}\/\d{6,}$/.test(form.yapeOperationCode.trim()) ? (
+            ) : !/^\d{3,4}-\d{6,}$/.test(form.yapeOperationCode.trim()) ? (
               <p className="mt-1 text-xs text-blush-500">
-                Formato invalido. Debe ser 000/000000 (3 o 4 digitos, una barra y 6 o mas digitos).
+                Formato invalido. Debe ser 000-000000 (3 o 4 digitos, un guion y 6 o mas digitos).
               </p>
             ) : (
-              <p className="mt-1 text-xs text-leaf-700/50">Formato: 3 o 4 digitos, una barra y 6 o mas digitos (ej. 1234/567890).</p>
+              <p className="mt-1 text-xs text-leaf-700/50">Formato: 3 o 4 digitos, un guion y 6 o mas digitos (ej. 1234-567890).</p>
             )}
 
             {showComprobanteHelp && (
