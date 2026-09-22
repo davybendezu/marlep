@@ -10,7 +10,6 @@ y pago mediante QR de Yape con verificacion manual del numero de operacion.
 marlep/
   backend/     API REST (Node.js + Express + PostgreSQL)
   frontend/    App React (Vite + Tailwind CSS)
-  imagen/      Artes originales de la marca
 ```
 
 ## 1. Base de datos (PostgreSQL)
