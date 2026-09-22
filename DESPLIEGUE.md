@@ -203,7 +203,9 @@ Vercel genera este archivo automaticamente al crear el proyecto (aparece en la p
       "framework": "vite"
     },
     "backend": {
-      "root": "backend"
+      "root": "backend",
+      "framework": "express",
+      "entrypoint": "src/index.js"
     }
   },
   "rewrites": [
@@ -219,7 +221,9 @@ Vercel genera este archivo automaticamente al crear el proyecto (aparece en la p
 }
 ```
 
-`backend` no lleva `framework` porque Vercel lo autodetecta como Express (zero-config). El rewrite preserva la ruta completa (no recorta el prefijo `/api`), lo cual calza con que las rutas del propio Express ya estan definidas con ese prefijo (`app.get('/api/health', ...)`, `app.use('/api/products', ...)`, etc. en [`backend/src/index.js`](backend/src/index.js)) — no requiere ningun cambio adicional en las rutas.
+El rewrite preserva la ruta completa (no recorta el prefijo `/api`), lo cual calza con que las rutas del propio Express ya estan definidas con ese prefijo (`app.get('/api/health', ...)`, `app.use('/api/products', ...)`, etc. en [`backend/src/index.js`](backend/src/index.js)) — no requiere ningun cambio adicional en las rutas.
+
+> `entrypoint` es obligatorio para el service `backend`: el builder de Express de Vercel busca automaticamente un archivo entre `{app,index,server,src/app,src/index,src/server}.js` en la raiz del service, pero si no logra resolverlo solo (como paso en el primer intento de deploy, con el error `must specify an "entrypoint" for runtime "node"`), hay que indicarlo explicitamente — en este caso `src/index.js` (relativo al `root: "backend"`), que es donde vive la app Express exportada (ver 2.3).
 
 ### 2.3 Requisitos que `backend/src/index.js` ya cumple
 
