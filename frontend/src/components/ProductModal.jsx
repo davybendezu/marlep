@@ -24,8 +24,8 @@ export default function ProductModal({ product, onClose }) {
   const outOfStock = selectedVariant.stock <= 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-leaf-700/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-t-3xl bg-white shadow-soft sm:rounded-3xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-leaf-700/40 p-3 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="max-h-[85dvh] w-full max-w-2xl overflow-y-auto rounded-3xl bg-white shadow-soft">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-honey-500/10 bg-white px-5 py-4">
           <h3 className="font-display text-lg font-semibold text-leaf-700">{product.name}</h3>
           <button onClick={onClose} className="rounded-full p-1 text-leaf-700 hover:bg-cream-100" aria-label="Cerrar">

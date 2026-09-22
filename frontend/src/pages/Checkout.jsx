@@ -14,7 +14,7 @@ export default function Checkout() {
   const [form, setForm] = useState({
     customerName: '',
     customerPhone: '',
-    deliveryMethod: 'delivery',
+    deliveryMethod: 'pickup',
     deliveryAddress: '',
     deliveryDistrict: '',
     notes: '',
@@ -36,13 +36,50 @@ export default function Checkout() {
     setForm((prev) => ({ ...prev, [name]: value }));
   }
 
+  function handlePhoneChange(e) {
+    const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 9);
+    setForm((prev) => ({ ...prev, customerPhone: digitsOnly }));
+  }
+
+  function handleYapeCodeChange(e) {
+    let raw = e.target.value.replace(/[^\d/]/g, '');
+    const slashIndex = raw.indexOf('/');
+    if (slashIndex !== -1) {
+      const before = raw.slice(0, slashIndex).slice(0, 4);
+      const after = raw.slice(slashIndex + 1).replace(/\//g, '');
+      raw = `${before}/${after}`;
+    } else {
+      raw = raw.slice(0, 4);
+    }
+    setForm((prev) => ({ ...prev, yapeOperationCode: raw }));
+  }
+
+  function validateForm() {
+    if (form.deliveryMethod === 'delivery' && !form.deliveryAddress.trim()) {
+      return 'Ingresa tu direccion completa para el delivery.';
+    }
+    if (!form.yapeOperationCode.trim()) {
+      return 'Ingresa el codigo/numero de operacion de tu pago Yape para poder verificarlo.';
+    }
+    if (!/^\d{3,4}\/\d{6,}$/.test(form.yapeOperationCode.trim())) {
+      return 'El codigo de operacion debe tener el formato 000/000000 (3 o 4 digitos, una barra y 6 o mas digitos).';
+    }
+    return '';
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
 
     if (items.length === 0) return;
-    if (!form.yapeOperationCode.trim()) {
-      setError('Ingresa el codigo/numero de operacion de tu pago Yape para poder verificarlo.');
+
+    // Nombre y celular ya muestran su propio aviso "obligatorio" debajo del campo,
+    // asi que aqui solo bloqueamos el envio sin duplicar el mensaje arriba del boton.
+    if (!form.customerName.trim() || !form.customerPhone.trim()) return;
+
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
@@ -76,27 +113,39 @@ export default function Checkout() {
       <h1 className="text-3xl font-bold text-leaf-700">Finalizar compra</h1>
       <p className="mt-1 text-leaf-700/70">Paga con Yape y confirma tu pedido en un par de pasos.</p>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr]">
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-honey-500/10">
+      <div className="mt-8 mx-auto max-w-2xl">
+        <form onSubmit={handleSubmit} noValidate className="space-y-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-honey-500/10">
           <div>
             <h2 className="font-display text-lg font-semibold text-leaf-700">Datos de contacto</h2>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
-              <input
-                required
-                name="customerName"
-                value={form.customerName}
-                onChange={handleChange}
-                placeholder="Nombre completo"
-                className="rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
-              />
-              <input
-                required
-                name="customerPhone"
-                value={form.customerPhone}
-                onChange={handleChange}
-                placeholder="Celular / WhatsApp"
-                className="rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
-              />
+              <div>
+                <input
+                  required
+                  name="customerName"
+                  value={form.customerName}
+                  onChange={handleChange}
+                  placeholder="Nombre completo"
+                  className="w-full rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
+                />
+                {form.customerName.trim() === '' && (
+                  <p className="mt-1 text-xs text-blush-500">Este campo es obligatorio.</p>
+                )}
+              </div>
+              <div>
+                <input
+                  required
+                  name="customerPhone"
+                  type="tel"
+                  inputMode="numeric"
+                  value={form.customerPhone}
+                  onChange={handlePhoneChange}
+                  placeholder="Celular / WhatsApp"
+                  className="w-full rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
+                />
+                {form.customerPhone.trim() === '' && (
+                  <p className="mt-1 text-xs text-blush-500">Este campo es obligatorio.</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -157,19 +206,61 @@ export default function Checkout() {
             />
           </div>
 
+          <div className="rounded-2xl bg-cream-50 p-5">
+            <h2 className="font-display text-lg font-semibold text-leaf-700">Resumen del pedido</h2>
+            <ul className="mt-3 space-y-2 text-sm text-leaf-700/80">
+              {items.map((item) => (
+                <li key={item.variantId} className="flex justify-between">
+                  <span>
+                    {item.productName} ({item.sizeLabel}) x{item.quantity}
+                  </span>
+                  <span>S/ {(item.price * item.quantity).toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 space-y-1 border-t border-honey-500/10 pt-3 text-sm">
+              <div className="flex justify-between text-leaf-700/70">
+                <span>Subtotal</span>
+                <span>S/ {subtotal.toFixed(2)}</span>
+              </div>
+              {form.deliveryMethod !== 'pickup' && (
+                <div className="flex justify-between text-leaf-700/70">
+                  <span>Envio</span>
+                  <span>{shippingCost === 0 ? 'Gratis' : `S/ ${shippingCost.toFixed(2)}`}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-base font-bold text-leaf-700">
+                <span>Total</span>
+                <span>S/ {total.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+
           <div>
             <h2 className="font-display text-lg font-semibold text-leaf-700">Pago con Yape</h2>
-            <p className="mt-1 text-sm text-leaf-700/70">1) Escanea el codigo QR y paga S/ {total.toFixed(2)}.</p>
+            <div className="mt-3">
+              <YapeQR titular={yapeConfig.titular} numero={yapeConfig.numero} monto={total} />
+            </div>
+            <p className="mt-4 text-sm text-leaf-700/70">1) Escanea el codigo QR y paga S/ {total.toFixed(2)}.</p>
             <p className="text-sm text-leaf-700/70">2) Copia el numero de operacion que te muestra Yape y pegalo aqui abajo para verificar tu pago.</p>
             <input
               required
               name="yapeOperationCode"
               value={form.yapeOperationCode}
-              onChange={handleChange}
+              onChange={handleYapeCodeChange}
               onFocus={() => setShowComprobanteHelp(true)}
-              placeholder="Numero / codigo de operacion Yape"
+              placeholder="000/000000"
               className="mt-3 w-full rounded-xl border border-honey-500/30 px-4 py-2.5 text-sm focus:border-leaf-600 focus:outline-none"
             />
+            {form.yapeOperationCode.trim() === '' ? (
+              <p className="mt-1 text-xs text-blush-500">Este campo es obligatorio.</p>
+            ) : !/^\d{3,4}\/\d{6,}$/.test(form.yapeOperationCode.trim()) ? (
+              <p className="mt-1 text-xs text-blush-500">
+                Formato invalido. Debe ser 000/000000 (3 o 4 digitos, una barra y 6 o mas digitos).
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-leaf-700/50">Formato: 3 o 4 digitos, una barra y 6 o mas digitos (ej. 1234/567890).</p>
+            )}
 
             {showComprobanteHelp && (
               <div className="mt-3 rounded-xl border border-honey-500/30 bg-cream-50 p-3">
@@ -191,40 +282,6 @@ export default function Checkout() {
             {submitting ? 'Enviando pedido...' : `Confirmar pedido · S/ ${total.toFixed(2)}`}
           </button>
         </form>
-
-        <div className="space-y-6">
-          <YapeQR titular={yapeConfig.titular} numero={yapeConfig.numero} monto={total} />
-
-          <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-honey-500/10">
-            <h2 className="font-display text-lg font-semibold text-leaf-700">Resumen del pedido</h2>
-            <ul className="mt-3 space-y-2 text-sm text-leaf-700/80">
-              {items.map((item) => (
-                <li key={item.variantId} className="flex justify-between">
-                  <span>
-                    {item.productName} ({item.sizeLabel}) x{item.quantity}
-                  </span>
-                  <span>S/ {(item.price * item.quantity).toFixed(2)}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 space-y-1 border-t border-cream-100 pt-3 text-sm">
-              <div className="flex justify-between text-leaf-700/70">
-                <span>Subtotal</span>
-                <span>S/ {subtotal.toFixed(2)}</span>
-              </div>
-              {form.deliveryMethod !== 'pickup' && (
-                <div className="flex justify-between text-leaf-700/70">
-                  <span>Envio</span>
-                  <span>{shippingCost === 0 ? 'Gratis' : `S/ ${shippingCost.toFixed(2)}`}</span>
-                </div>
-              )}
-              <div className="flex justify-between text-base font-bold text-leaf-700">
-                <span>Total</span>
-                <span>S/ {total.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
