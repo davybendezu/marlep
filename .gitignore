@@ -1,0 +1,12 @@
+# Dependencias
+node_modules/
+
+# Build de produccion
+frontend/dist/
+
+# Variables de entorno (contienen credenciales de Neon)
+backend/.env
+
+# Editor / OS
+.DS_Store
+*.log
