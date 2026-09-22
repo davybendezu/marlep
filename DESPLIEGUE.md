@@ -269,15 +269,41 @@ Localmente (`npm run dev`/`npm start`) sigue funcionando igual: `VERCEL` no exis
 
 Confirmar que `frontend/public/images/yape-qr.png` (exportado desde la app Yape del negocio) este presente antes del build. Sin el, el checkout sigue siendo usable pero muestra el QR de referencia generado por `qrcode.react`.
 
+### 2.6 Bitacora del primer deploy (2026-09-21)
+
+Registro de lo que paso al desplegar por primera vez, para referencia futura:
+
+1. **Repo subido a GitHub** como `davybendezu/marlep` (privado) — ver [GITHUB.md](GITHUB.md) para el procedimiento completo (`.gitignore` excluye `backend/.env` con las credenciales reales).
+2. **Neon configurado**: proyecto creado, `schema.sql` + `seed.sql` cargados (via SQL directo desde esta sesion, equivalente al contenido actual de esos archivos — incluye las 4 fragancias: Avena, Miel, Vainilla, Lavanda), y el `ALTER ROLE ... SET search_path` de 1.3.1 ya aplicado sobre `neondb_owner`/`neondb`.
+3. **Primer intento de deploy en Vercel** fallo con:
+   ```
+   Error: Service "backend" detected framework "express" in "backend" and must specify an "entrypoint" for runtime "node".
+   ```
+   Vercel detecto el framework Express pero no pudo resolver solo el archivo de entrada. Se agrego `"entrypoint": "src/index.js"` (y `"framework": "express"` explicito) al service `backend` en `vercel.json` (ver 2.2) — commit `a4c13bc`.
+4. **Segundo intento**: el build completo sin errores ("You just deployed a new project to Davy's projects", con preview del frontend renderizando el logo de Marlep Cosmetics).
+5. **Problema abierto sin resolver todavia**: al probar `https://marlep.vercel.app` (frontend, `/api/health`, `/api/config/yape`, `/api/products`) todas las rutas devuelven:
+   ```
+   DEPLOYMENT_NOT_FOUND
+   ```
+   El build fue exitoso segun la UI de Vercel, pero ese dominio especifico no resuelve a el. Posibles causas a revisar en el dashboard (Settings → Domains del proyecto):
+   - El nombre final del proyecto podria no ser exactamente `marlep` (verificar el nombre real asignado).
+   - El deploy podria haber quedado como **Preview** en vez de **Production**, y el dominio `*.vercel.app` sin sufijo solo apunta al deployment de Production.
+   - El alias de dominio de produccion puede tardar unos segundos en propagarse tras el primer deploy.
+   
+   Pendiente: confirmar en el dashboard cual es la URL real del deployment y actualizar esta seccion (y los ejemplos de 2.4) si difiere de `marlep.vercel.app`.
+
 ---
 
 ## 3. Checklist final
 
-- [ ] Proyecto Neon creado, `schema.sql` y `seed.sql` cargados.
-- [ ] `backend/src/db.js` actualizado para soportar `DATABASE_URL` + SSL.
+- [x] Proyecto Neon creado, `schema.sql` y `seed.sql` cargados.
+- [x] `search_path` configurado a nivel de rol en Neon (`ALTER ROLE`, ver 1.3.1).
+- [x] `backend/src/db.js` actualizado para soportar `DATABASE_URL` + SSL (sin override que anule `verify-full`, ver 1.3.2).
 - [x] `backend/src/index.js` exporta `app` y solo hace `listen` fuera de Vercel.
-- [x] `vercel.json` en la raiz del repo con `services` + `rewrites` (ver 2.2).
-- [ ] Proyecto Vercel `marlep` desplegado (preset Services), con `DATABASE_URL` (endpoint **pooled**), `YAPE_TITULAR`, `YAPE_NUMERO`.
+- [x] Repo subido a GitHub (`davybendezu/marlep`, privado) — ver [GITHUB.md](GITHUB.md).
+- [x] `vercel.json` en la raiz del repo con `services` + `rewrites` + `entrypoint` explicito para `backend` (ver 2.2).
+- [x] Proyecto Vercel `marlep` creado y desplegado (build exitoso), con `DATABASE_URL` (endpoint **pooled**), `YAPE_TITULAR`, `YAPE_NUMERO`.
+- [ ] **Confirmar el dominio real de produccion** — `https://marlep.vercel.app` devuelve `DEPLOYMENT_NOT_FOUND` (ver 2.6, problema abierto).
 - [ ] `frontend/public/images/yape-qr.png` presente (QR real, no el de referencia).
 - [ ] Prueba end-to-end en produccion: catalogo → carrito → checkout → `POST /api/orders` → `GET /pedido/:code`.
 

@@ -14,7 +14,7 @@ export const fallbackProducts = [
     image_url: '/images/producto-generico.png',
     accent_color: '#D8C089',
     variants: [
-      { id: 1, size_label: 'Mini / Facial', size_grams: 30, price: 12, compare_price: null, stock: 40 },
+      { id: 1, size_label: 'Mini Bolsillo', size_grams: 30, price: 12, compare_price: null, stock: 40 },
       { id: 2, size_label: 'Tamaño de Viaje', size_grams: 60, price: 18, compare_price: null, stock: 35 },
       { id: 3, size_label: 'Tamaño Estándar', size_grams: 100, price: 25, compare_price: 29, stock: 50 },
       { id: 4, size_label: 'Tamaño Familiar', size_grams: 250, price: 45, compare_price: 52, stock: 20 },
@@ -33,7 +33,7 @@ export const fallbackProducts = [
     image_url: '/images/producto-generico.png',
     accent_color: '#E7A93C',
     variants: [
-      { id: 5, size_label: 'Mini / Facial', size_grams: 30, price: 13, compare_price: null, stock: 40 },
+      { id: 5, size_label: 'Mini Bolsillo', size_grams: 30, price: 13, compare_price: null, stock: 40 },
       { id: 6, size_label: 'Tamaño de Viaje', size_grams: 60, price: 19, compare_price: null, stock: 35 },
       { id: 7, size_label: 'Tamaño Estándar', size_grams: 100, price: 26, compare_price: 30, stock: 50 },
       { id: 8, size_label: 'Tamaño Familiar', size_grams: 250, price: 47, compare_price: 54, stock: 20 },
@@ -51,7 +51,7 @@ export const fallbackProducts = [
     image_url: '/images/producto-generico.png',
     accent_color: '#E8A6A0',
     variants: [
-      { id: 9, size_label: 'Mini / Facial', size_grams: 30, price: 12, compare_price: null, stock: 40 },
+      { id: 9, size_label: 'Mini Bolsillo', size_grams: 30, price: 12, compare_price: null, stock: 40 },
       { id: 10, size_label: 'Tamaño de Viaje', size_grams: 60, price: 18, compare_price: null, stock: 35 },
       { id: 11, size_label: 'Tamaño Estándar', size_grams: 100, price: 25, compare_price: null, stock: 50 },
       { id: 12, size_label: 'Tamaño Familiar', size_grams: 250, price: 45, compare_price: null, stock: 20 },
@@ -70,7 +70,7 @@ export const fallbackProducts = [
     image_url: '/images/producto-generico.png',
     accent_color: '#B7A6D9',
     variants: [
-      { id: 13, size_label: 'Mini / Facial', size_grams: 30, price: 12, compare_price: null, stock: 40 },
+      { id: 13, size_label: 'Mini Bolsillo', size_grams: 30, price: 12, compare_price: null, stock: 40 },
       { id: 14, size_label: 'Tamaño de Viaje', size_grams: 60, price: 18, compare_price: null, stock: 35 },
       { id: 15, size_label: 'Tamaño Estándar', size_grams: 100, price: 25, compare_price: null, stock: 50 },
       { id: 16, size_label: 'Tamaño Familiar', size_grams: 250, price: 45, compare_price: null, stock: 20 },
