@@ -40,7 +40,7 @@ export default function ProductModal({ product, onClose }) {
             <p className="text-sm text-leaf-700/80">{product.description}</p>
 
             <div className="mt-5">
-              <p className="text-sm font-semibold text-leaf-700">Elige tu tamano</p>
+              <p className="text-sm font-semibold text-leaf-700">Elige tu tama&ntilde;o</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {product.variants.map((variant) => (
                   <button

@@ -9,14 +9,14 @@ export default function SizeGuide() {
   return (
     <section className="container-page py-16">
       <div className="text-center">
-        <span className="chip chip-active inline-block">Elige tu tamano</span>
-        <h2 className="mt-4 text-3xl font-bold text-leaf-700">Una presentacion para cada momento</h2>
+        <span className="chip chip-active inline-block">Elige tu tama&ntilde;o</span>
+        <h2 className="mt-4 text-3xl font-bold text-leaf-700">Una presentaci&oacute;n para cada momento</h2>
       </div>
 
       <div className="mt-10 grid gap-10 md:grid-cols-2 md:items-center">
         <img
           src="/images/tallas.jpg"
-          alt="Presentaciones Marlep Cosmetics: familiar, estandar, viaje y mini"
+          alt="Presentaciones Marlep Cosmetics: familiar, estandar, viaje y mini bolsillo"
           className="mx-auto w-full max-w-xl rounded-[2rem] shadow-soft"
         />
         <div className="grid grid-cols-2 gap-4">
