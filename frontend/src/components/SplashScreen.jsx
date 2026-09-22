@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const VISIBLE_MS = 1900;
 const FADE_MS = 600;
 
 export default function SplashScreen({ onDone }) {
   const [fading, setFading] = useState(false);
+  const audioRef = useRef(null);
   const [entry] = useState(() => {
     const angle = Math.random() * Math.PI * 2;
     const distance = 90 + Math.random() * 70;
@@ -19,6 +20,16 @@ export default function SplashScreen({ onDone }) {
   useEffect(() => {
     document.body.style.overflow = 'hidden';
 
+    const playAudio = () => audioRef.current?.play().catch(() => {});
+    const interactionEvents = ['pointerdown', 'keydown', 'touchstart'];
+
+    // Los navegadores bloquean el autoplay con sonido sin interaccion previa del usuario.
+    // Si el intento inicial falla, queda un listener de un solo uso que reproduce el
+    // audio apenas ocurra la primera interaccion en la pagina.
+    audioRef.current?.play().catch(() => {
+      interactionEvents.forEach((event) => document.addEventListener(event, playAudio, { once: true }));
+    });
+
     const fadeTimer = setTimeout(() => setFading(true), VISIBLE_MS);
     const doneTimer = setTimeout(() => {
       document.body.style.overflow = '';
@@ -29,6 +40,7 @@ export default function SplashScreen({ onDone }) {
       clearTimeout(fadeTimer);
       clearTimeout(doneTimer);
       document.body.style.overflow = '';
+      interactionEvents.forEach((event) => document.removeEventListener(event, playAudio));
     };
   }, [onDone]);
 
@@ -65,6 +77,7 @@ export default function SplashScreen({ onDone }) {
       </div>
 
       <span className="sr-only">Cargando Marlep Cosmetics…</span>
+      <audio ref={audioRef} src="/audio/marlep-splash.mp3" preload="auto" />
     </div>
   );
 }
