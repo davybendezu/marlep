@@ -29,6 +29,10 @@ export default function StorySection() {
             Presentaciones para cada necesidad: mini, viaje, estandar y familiar.
           </li>
         </ul>
+        <p className="mt-6 text-sm italic text-leaf-700/60">
+          Un proyecto de emprendedores huancaínos: Renato Bendezú, Mathias Castillo,
+          Patrick Huamán, Adrian Chupurgo y Leonardo Barrientos.
+        </p>
       </div>
     </section>
   );
