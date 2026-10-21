@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 const CartContext = createContext(null);
-const STORAGE_KEY = 'marlep_cart_v1';
+// v2: cada item lleva fragancia; los carritos v1 (sin fragancia) se descartan.
+const STORAGE_KEY = 'marlep_cart_v2';
 
 function loadCart() {
   try {
@@ -12,6 +13,12 @@ function loadCart() {
   }
 }
 
+// Una misma presentacion puede ir en el carrito con distintas fragancias,
+// asi que cada linea se identifica por variante + fragancia.
+function itemKey(variantId, fragrance) {
+  return `${variantId}-${fragrance}`;
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart);
   const [isOpen, setIsOpen] = useState(false);
@@ -20,18 +27,19 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
-  function addItem(product, variant, quantity = 1) {
+  function addItem(product, variant, fragrance, quantity = 1) {
+    const key = itemKey(variant.id, fragrance);
     setItems((prev) => {
-      const existing = prev.find((i) => i.variantId === variant.id);
+      const existing = prev.find((i) => i.key === key);
       if (existing) {
-        return prev.map((i) =>
-          i.variantId === variant.id ? { ...i, quantity: i.quantity + quantity } : i
-        );
+        return prev.map((i) => (i.key === key ? { ...i, quantity: i.quantity + quantity } : i));
       }
       return [
         ...prev,
         {
+          key,
           variantId: variant.id,
+          fragrance,
           productSlug: product.slug,
           productName: product.name,
           imageUrl: product.image_url,
@@ -45,16 +53,16 @@ export function CartProvider({ children }) {
     setIsOpen(true);
   }
 
-  function updateQuantity(variantId, quantity) {
+  function updateQuantity(key, quantity) {
     setItems((prev) =>
       quantity <= 0
-        ? prev.filter((i) => i.variantId !== variantId)
-        : prev.map((i) => (i.variantId === variantId ? { ...i, quantity } : i))
+        ? prev.filter((i) => i.key !== key)
+        : prev.map((i) => (i.key === key ? { ...i, quantity } : i))
     );
   }
 
-  function removeItem(variantId) {
-    setItems((prev) => prev.filter((i) => i.variantId !== variantId));
+  function removeItem(key) {
+    setItems((prev) => prev.filter((i) => i.key !== key));
   }
 
   function clearCart() {

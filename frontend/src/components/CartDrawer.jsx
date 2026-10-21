@@ -25,15 +25,17 @@ export default function CartDrawer() {
           ) : (
             <ul className="space-y-4">
               {items.map((item) => (
-                <li key={item.variantId} className="flex gap-3 border-b border-cream-100 pb-4">
+                <li key={item.key} className="flex gap-3 border-b border-cream-100 pb-4">
                   <img src={item.imageUrl} alt={item.productName} className="h-16 w-16 rounded-xl bg-cream-100 object-cover" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-leaf-700">{item.productName}</p>
-                    <p className="text-xs text-leaf-700/60">{item.sizeLabel}</p>
+                    <p className="text-xs text-leaf-700/60">
+                      {item.sizeLabel} · Fragancia: <span className="font-semibold">{item.fragrance}</span>
+                    </p>
                     <div className="mt-2 flex items-center justify-between">
                       <div className="flex items-center rounded-full border border-honey-500/40">
                         <button
-                          onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.key, item.quantity - 1)}
                           className="px-2.5 py-0.5 text-leaf-700"
                           aria-label="Disminuir cantidad"
                         >
@@ -41,7 +43,7 @@ export default function CartDrawer() {
                         </button>
                         <span className="w-6 text-center text-sm font-semibold">{item.quantity}</span>
                         <button
-                          onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.key, item.quantity + 1)}
                           className="px-2.5 py-0.5 text-leaf-700"
                           aria-label="Aumentar cantidad"
                         >
@@ -54,7 +56,7 @@ export default function CartDrawer() {
                     </div>
                   </div>
                   <button
-                    onClick={() => removeItem(item.variantId)}
+                    onClick={() => removeItem(item.key)}
                     className="self-start text-xs font-medium text-blush-500 hover:underline"
                   >
                     Quitar

@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext.jsx';
 import { CloseIcon } from './icons.jsx';
+import { FRAGRANCES } from '../data/fragrances.js';
 
 export default function ProductModal({ product, onClose }) {
   const { addItem } = useCart();
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [fragrance, setFragrance] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const [showFragranceError, setShowFragranceError] = useState(false);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -16,7 +19,11 @@ export default function ProductModal({ product, onClose }) {
   }, []);
 
   function handleAdd() {
-    addItem(product, selectedVariant, quantity);
+    if (!fragrance) {
+      setShowFragranceError(true);
+      return;
+    }
+    addItem(product, selectedVariant, fragrance, quantity);
     setAdded(true);
     setTimeout(() => onClose(), 700);
   }
@@ -56,6 +63,29 @@ export default function ProductModal({ product, onClose }) {
                 ))}
               </div>
             </div> */}
+
+            <div className="mt-5">
+              <p className="text-sm font-semibold text-leaf-700">Elige tu fragancia</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {FRAGRANCES.map((f) => (
+                  <button
+                    key={f.value}
+                    type="button"
+                    onClick={() => {
+                      setFragrance(f.value);
+                      setShowFragranceError(false);
+                    }}
+                    className={`chip inline-flex items-center gap-2 ${fragrance === f.value ? 'chip-active' : 'bg-cream-50'}`}
+                  >
+                    <span className="h-3 w-3 rounded-full ring-1 ring-white" style={{ backgroundColor: f.color }} />
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              {showFragranceError && (
+                <p className="mt-2 text-xs text-blush-500">Selecciona una fragancia para continuar.</p>
+              )}
+            </div>
 
             <div className="mt-4 flex items-baseline gap-2">
               <span className="text-2xl font-bold text-honey-600">S/ {Number(selectedVariant.price).toFixed(2)}</span>

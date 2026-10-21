@@ -7,6 +7,7 @@ import ProductModal from '../components/ProductModal.jsx';
 import StorySection from '../components/StorySection.jsx';
 import IngredientsSection from '../components/IngredientsSection.jsx';
 import SizeGuide from '../components/SizeGuide.jsx';
+import { FRAGRANCES } from '../data/fragrances.js';
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -42,6 +43,15 @@ export default function Home() {
         <div className="text-center">
           <span className="chip chip-active inline-block">Coleccion Marlep</span>
           <h2 className="mt-4 text-3xl font-bold text-leaf-700">Elige tu prodcuto</h2>
+          <p className="mx-auto mt-3 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm text-leaf-700/80">
+            Disponible en {FRAGRANCES.length} fragancias:
+            {FRAGRANCES.map((f) => (
+              <span key={f.value} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-semibold ring-1 ring-honey-500/20">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: f.color }} />
+                {f.label}
+              </span>
+            ))}
+          </p>
           {/* <p className="mx-auto mt-2 max-w-xl text-leaf-700/70">
             Tres formulas artesanales, cuatro tamanos. Encuentra la crema perfecta para ti.
           </p> */}

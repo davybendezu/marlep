@@ -91,7 +91,7 @@ export default function Checkout() {
     try {
       const result = await createOrder({
         ...form,
-        items: items.map((item) => ({ variantId: item.variantId, quantity: item.quantity })),
+        items: items.map((item) => ({ variantId: item.variantId, fragrance: item.fragrance, quantity: item.quantity })),
       });
       clearCart();
       navigate(`/pedido/${result.orderCode}`);
@@ -214,9 +214,9 @@ export default function Checkout() {
             <h2 className="font-display text-lg font-semibold text-leaf-700">Resumen del pedido</h2>
             <ul className="mt-3 space-y-2 text-sm text-leaf-700/80">
               {items.map((item) => (
-                <li key={item.variantId} className="flex justify-between">
+                <li key={item.key} className="flex justify-between">
                   <span>
-                    {item.productName} ({item.sizeLabel}) x{item.quantity}
+                    {item.productName} ({item.sizeLabel}) · {item.fragrance} x{item.quantity}
                   </span>
                   <span>S/ {(item.price * item.quantity).toFixed(2)}</span>
                 </li>

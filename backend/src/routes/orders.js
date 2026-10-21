@@ -5,6 +5,9 @@ const router = Router();
 
 const DISTRICTS_WITH_FREE_SHIPPING = new Set(); // ejemplo: agregar distritos sin costo de envio
 const SHIPPING_COST = 8.0;
+// Fragancias validas para cualquier presentacion (sincronizar con frontend/src/data/fragrances.js).
+// No hay columna propia en order_items: la fragancia se guarda en el snapshot de product_name.
+const ALLOWED_FRAGRANCES = new Set(['Coco', 'Vainilla']);
 
 function generateOrderCode() {
   const timestamp = Date.now().toString(36).toUpperCase();
@@ -22,7 +25,7 @@ router.post('/', async (req, res) => {
     deliveryDistrict,
     notes,
     yapeOperationCode,
-    items, // [{ variantId, quantity }]
+    items, // [{ variantId, fragrance, quantity }]
   } = req.body;
 
   if (!customerName || !customerPhone) {
@@ -30,6 +33,9 @@ router.post('/', async (req, res) => {
   }
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'El carrito esta vacio' });
+  }
+  if (items.some((item) => !ALLOWED_FRAGRANCES.has(item.fragrance))) {
+    return res.status(400).json({ error: 'Selecciona una fragancia valida (Coco o Vainilla) para cada producto' });
   }
   if (deliveryMethod === 'delivery' && !deliveryAddress) {
     return res.status(400).json({ error: 'La direccion es obligatoria para delivery' });
@@ -41,6 +47,8 @@ router.post('/', async (req, res) => {
 
     let subtotal = 0;
     const resolvedItems = [];
+    // Una variante puede venir en varias lineas (una por fragancia): el stock se valida contra la suma.
+    const requestedByVariant = new Map();
 
     for (const item of items) {
       const variantResult = await client.query(
@@ -62,7 +70,9 @@ router.post('/', async (req, res) => {
       if (quantity <= 0) {
         throw Object.assign(new Error('Cantidad invalida'), { status: 400 });
       }
-      if (variant.stock < quantity) {
+      const requested = (requestedByVariant.get(variant.id) || 0) + quantity;
+      requestedByVariant.set(variant.id, requested);
+      if (variant.stock < requested) {
         throw Object.assign(
           new Error(`Stock insuficiente para ${variant.product_name} (${variant.size_label})`),
           { status: 409 }
@@ -74,7 +84,7 @@ router.post('/', async (req, res) => {
 
       resolvedItems.push({
         variantId: variant.id,
-        productName: variant.product_name,
+        productName: `${variant.product_name} - ${item.fragrance}`,
         sizeLabel: variant.size_label,
         unitPrice: Number(variant.price),
         quantity,
