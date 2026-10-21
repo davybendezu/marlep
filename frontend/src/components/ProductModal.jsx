@@ -75,10 +75,19 @@ export default function ProductModal({ product, onClose }) {
                       setFragrance(f.value);
                       setShowFragranceError(false);
                     }}
-                    className={`chip inline-flex items-center gap-2 ${fragrance === f.value ? 'chip-active' : 'bg-cream-50'}`}
+                    aria-pressed={fragrance === f.value}
+                    className={`chip group inline-flex items-center gap-2 duration-200 hover:-translate-y-0.5 hover:shadow-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-honey-500/50 ${
+                      fragrance === f.value
+                        ? 'chip-active shadow-soft'
+                        : 'bg-cream-50 hover:border-honey-500 hover:bg-white hover:text-honey-600'
+                    }`}
                   >
-                    <span className="h-3 w-3 rounded-full ring-1 ring-white" style={{ backgroundColor: f.color }} />
+                    <span
+                      className="h-3 w-3 rounded-full ring-1 ring-white transition-transform duration-200 group-hover:scale-125"
+                      style={{ backgroundColor: f.color }}
+                    />
                     {f.label}
+                    {fragrance === f.value && <span aria-hidden="true">✓</span>}
                   </button>
                 ))}
               </div>
