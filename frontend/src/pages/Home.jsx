@@ -42,16 +42,35 @@ export default function Home() {
       <section id="productos" className="container-page py-16">
         <div className="text-center">
           <span className="chip chip-active inline-block">Coleccion Marlep</span>
-          <h2 className="mt-4 text-3xl font-bold text-leaf-700">Elige tu prodcuto</h2>
-          <p className="mx-auto mt-3 flex max-w-xl flex-wrap items-center justify-center gap-2 text-sm text-leaf-700/80">
-            Disponible en {FRAGRANCES.length} fragancias:
-            {FRAGRANCES.map((f) => (
-              <span key={f.value} className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 font-semibold ring-1 ring-honey-500/20">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: f.color }} />
-                {f.label}
-              </span>
-            ))}
-          </p>
+          <h2 className="mt-4 text-3xl font-bold text-leaf-700">Elige tu producto</h2>
+
+          <div className="mx-auto mt-6 max-w-lg">
+            <div className="flex items-center gap-4">
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-honey-500/40" />
+              <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-honey-600">
+                Disponible en {FRAGRANCES.length} fragancias
+              </p>
+              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-honey-500/40" />
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+              {FRAGRANCES.map((f) => (
+                <div
+                  key={f.value}
+                  className="flex items-center gap-3 rounded-2xl bg-white/80 px-4 py-3 text-left shadow-sm ring-1 ring-honey-500/15 transition hover:-translate-y-0.5 hover:shadow-soft"
+                >
+                  <span
+                    className="h-10 w-10 flex-shrink-0 rounded-full shadow-inner ring-4 ring-cream-100"
+                    style={{ background: `radial-gradient(circle at 30% 30%, #ffffff 0%, ${f.color} 65%)` }}
+                  />
+                  <div className="min-w-0">
+                    <p className="font-display text-lg font-semibold leading-tight text-leaf-700">{f.label}</p>
+                    <p className="truncate text-xs text-leaf-700/60">{f.note}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           {/* <p className="mx-auto mt-2 max-w-xl text-leaf-700/70">
             Tres formulas artesanales, cuatro tamanos. Encuentra la crema perfecta para ti.
           </p> */}
