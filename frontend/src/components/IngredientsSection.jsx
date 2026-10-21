@@ -1,9 +1,9 @@
 const INGREDIENTS = [
   { name: 'Harina de Avena Natural', detail: 'Exfolia suavemente y calma la piel irritada.' },
   { name: 'Miel de Abeja (flores silvestres)', detail: 'Nutre intensamente y aporta brillo natural.' },
-  { name: 'Extracto de Aloe Vera', detail: 'Hidrata en profundidad y refresca la piel.' },
-  { name: 'Aceite de Almendras Dulces', detail: 'Prensado en frio, suaviza y repara la barrera cutanea.' },
-  { name: 'Esencia de Vainilla', detail: 'Aroma relajante, apto para piel delicada.' },
+  { name: 'Extracto de Aloe Vera o Extracto de Coco', detail: 'Hidrata en profundidad y refresca la piel.' },
+  { name: 'Aceite de Almendras Dulces o Aceite de Coco', detail: 'Prensado en frio, suaviza y repara la barrera cutanea.' },
+  { name: 'Esencia de Vainilla o Esencia de Coco', detail: 'Segun la fragancia elegida: aroma relajante, apto para piel delicada.' },
 ];
 
 export default function IngredientsSection() {
